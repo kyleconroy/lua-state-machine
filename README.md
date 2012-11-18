@@ -8,7 +8,7 @@ This standalone lua module provides a finite state machine for your pleasure. Ba
 Download
 ========
 
-You can download [fsm.lua](https:--github.com/kyleconroy/lua-state-machine/raw/master/fsm.lua).
+You can download [fsm.lua](https://github.com/kyleconroy/lua-state-machine/raw/master/fsm.lua).
 
 Alternatively:
 
