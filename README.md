@@ -3,12 +3,12 @@ Lua Finite State Machine
 
 **Travis CI goes here **
 
-This standalone lua module provides a finite state machine for your pleasure. Based **heavily** on Jake Gordon's [javascript-state-machine](https://github.com/jakesgordon/javascript-state-machine).
+This standalone lua module provides a finite state machine for your pleasure. Based **heavily** on Jake Gordon's [javascript-state-machine](https:--github.com/jakesgordon/javascript-state-machine).
 
 Download
 ========
 
-You can download [fsm.lua](https://github.com/kyleconroy/lua-state-machine/raw/master/fsm.lua).
+You can download [fsm.lua](https:--github.com/kyleconroy/lua-state-machine/raw/master/fsm.lua).
 
 Alternatively:
 
@@ -173,7 +173,7 @@ local fsm = machine.create({
 
   initial = 'menu',
 
-  events = }
+  events = {
     { name = 'play', from = 'menu', to = 'game' },
     { name = 'quit', from = 'game', to = 'menu' }
   },
@@ -187,14 +187,14 @@ local fsm = machine.create({
       manager.fade('fast', function()
         fsm.transition()
       end)
-      return machine.ASYNC // tell machine to defer next state until we call transition (in fadeOut callback above)
+      return machine.ASYNC -- tell machine to defer next state until we call transition (in fadeOut callback above)
     end,
 
     onleavegame = function()
       manager.slide('slow', function()
         fsm.transition()
       end)
-      return machine.ASYNC // tell machine to defer next state until we call transition (in slideDown callback above)
+      return machine.ASYNC -- tell machine to defer next state until we call transition (in slideDown callback above)
     end,
   }
 })
@@ -257,9 +257,9 @@ local fsm = machine.create({
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
 
-print(fsm.current) // "none"
+print(fsm.current) -- "none"
 fsm.startup()
-print(fsm.current) // "green"
+print(fsm.current) -- "green"
 ```
 
 If you specify the name of your initial event (as in all the earlier examples), then an
@@ -274,7 +274,7 @@ local fsm = machine.create({
     { name = 'panic',   from = 'green', to = 'red'   },
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
-print(fsm.current) // "green"
+print(fsm.current) -- "green"
 ```
 
 If your object already has a `startup` method you can use a different name for the initial event
@@ -288,7 +288,7 @@ local fsm = machine.create({
     { name = 'panic',   from = 'green', to = 'red'   },
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
-print(fsm.current) // "green"
+print(fsm.current) -- "green"
 ```
 
 Finally, if you want to wait to call the initial state transition event until a later date you
@@ -304,9 +304,9 @@ local fsm = machine.create({
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
 
-print(fsm.current) // "none"
+print(fsm.current) -- "none"
 fsm.init()
-print(fsm.current) // "green"
+print(fsm.current) -- "green"
 ```
 
 Of course, we have now come full circle, this last example is pretty much functionally the
@@ -340,5 +340,5 @@ local fsm = machine.create({
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
 
-print(fsm.calm()); // "event calm was naughty :- event not allowed in current state green"
+print(fsm.calm()); -- "event calm was naughty :- event not allowed in current state green"
 ```
