@@ -37,17 +37,17 @@ local fsm = machine.create({
 
 ... will create an object with a method for each event:
 
- * fsm.warn()  - transition from 'green' to 'yellow'
- * fsm.panic() - transition from 'yellow' to 'red'
- * fsm.calm()  - transition from 'red' to 'yellow'
- * fsm.clear() - transition from 'yellow' to 'green'
+ * fsm:warn()  - transition from 'green' to 'yellow'
+ * fsm:panic() - transition from 'yellow' to 'red'
+ * fsm:calm()  - transition from 'red' to 'yellow'
+ * fsm:clear() - transition from 'yellow' to 'green'
 
 along with the following members:
 
  * fsm.current   - contains the current state
- * fsm.is(s)     - return true if state `s` is the current state
- * fsm.can(e)    - return true if event `e` can be fired in the current state
- * fsm.cannot(e) - return true if event `e` cannot be fired in the current state
+ * fsm:is(s)     - return true if state `s` is the current state
+ * fsm:can(e)    - return true if event `e` can be fired in the current state
+ * fsm:cannot(e) - return true if event `e` cannot be fired in the current state
 
 Multiple 'from' and 'to' states for a single event
 ==================================================
@@ -73,8 +73,8 @@ local fsm = machine.create({
 
 This example will create an object with 2 event methods:
 
- * fsm.eat()
- * fsm.rest()
+ * fsm:eat()
+ * fsm:rest()
 
 The `rest` event will always transition to the `hungry` state, while the `eat` event
 will transition to a state that is dependent on the current state.
@@ -137,8 +137,8 @@ local fsm = machine.create({
   }
 })
 
-fsm.panic('killer bees')
-fsm.clear('sedatives in the honey pots')
+fsm:panic('killer bees')
+fsm:clear('sedatives in the honey pots')
 ...
 ```
 
@@ -187,14 +187,14 @@ local fsm = machine.create({
 
     onleavemenu = function()
       manager.fade('fast', function()
-        fsm.transition()
+        fsm:transition()
       end)
       return machine.ASYNC -- tell machine to defer next state until we call transition (in fadeOut callback above)
     end,
 
     onleavegame = function()
       manager.slide('slow', function()
-        fsm.transition()
+        fsm:transition()
       end)
       return machine.ASYNC -- tell machine to defer next state until we call transition (in slideDown callback above)
     end,
@@ -260,7 +260,7 @@ local fsm = machine.create({
 }})
 
 print(fsm.current) -- "none"
-fsm.startup()
+fsm:startup()
 print(fsm.current) -- "green"
 ```
 
@@ -342,5 +342,5 @@ local fsm = machine.create({
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
 
-print(fsm.calm()); -- "event calm was naughty :- event not allowed in current state green"
+print(fsm:calm()); -- "event calm was naughty :- event not allowed in current state green"
 ```
