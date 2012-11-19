@@ -6,6 +6,7 @@ local function create_transition(name, to)
   return function(self)
     if self:can(name) then
       self.current = to
+      if self["on" .. name] then self["on" .. name](self, name, nil, to) end
       return true
     end
     return false

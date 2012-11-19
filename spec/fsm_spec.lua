@@ -51,6 +51,18 @@ describe("Lua state machine framework", function()
       assert.is_false(fsm:is('red'))
       assert.is_false(fsm:is('yellow'))
     end)
+
+    it("should fire the onwarn handler", function()
+      local fsm = machine.create({ initial = 'green', events = stoplight })
+      fsm.onwarn = function(self, name, from, to) 
+        self.called = true
+      end
+
+      fsm:warn()
+
+      assert.is_true(fsm.called)
+    end)
+
   end)
 end)
 
