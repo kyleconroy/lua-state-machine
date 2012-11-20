@@ -1,6 +1,6 @@
 require("busted")
 
-local machine = require("fsm")
+local machine = require("statemachine")
 
 local stoplight =  {
   { name = 'warn',  from = 'green',  to = 'yellow' },
