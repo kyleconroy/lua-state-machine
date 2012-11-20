@@ -52,15 +52,59 @@ describe("Lua state machine framework", function()
       assert.is_false(fsm:is('yellow'))
     end)
 
-    it("should fire the onwarn handler", function()
+    it("should cancel the warn event", function()
       local fsm = machine.create({ initial = 'green', events = stoplight })
-      fsm.onwarn = function(self, name, from, to) 
-        self.called = true
+      fsm.onleavegreen = function(self, name, from, to) 
+        return false
+      end
+
+      local result = fsm:warn()
+
+      assert.is_false(result)
+      assert.are.equals(fsm.current, 'green')
+    end)
+
+    it("should cancel the warn event", function()
+      local fsm = machine.create({ initial = 'green', events = stoplight })
+      fsm.onbeforewarn = function(self, name, from, to) 
+        return false
+      end
+
+      local result = fsm:warn()
+
+      assert.is_false(result)
+      assert.are.equals(fsm.current, 'green')
+    end)
+
+    it("should fire the onstatechange handler", function()
+      local fsm = machine.create({ initial = 'green', events = stoplight })
+      fsm.onstatechange = function(self, name, from, to) 
+        self.name = name
+        self.from = from
+        self.to = to
       end
 
       fsm:warn()
 
-      assert.is_true(fsm.called)
+      assert.are.equals(fsm.name, 'warn')
+      assert.are.equals(fsm.from, 'green')
+      assert.are.equals(fsm.to, 'yellow')
+    end)
+
+
+    it("should fire the onwarn handler", function()
+      local fsm = machine.create({ initial = 'green', events = stoplight })
+      fsm.onwarn = function(self, name, from, to) 
+        self.name = name
+        self.from = from
+        self.to = to
+      end
+
+      fsm:warn()
+
+      assert.are.equals(fsm.name, 'warn')
+      assert.are.equals(fsm.from, 'green')
+      assert.are.equals(fsm.to, 'yellow')
     end)
 
   end)
