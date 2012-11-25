@@ -76,6 +76,17 @@ describe("Lua state machine framework", function()
       assert.are.equals(fsm.current, 'green')
     end)
 
+    it("should accept other arguments", function()
+      local fsm = machine.create({ initial = 'green', events = stoplight })
+      fsm.onstatechange = function(self, name, from, to, foo)
+        self.foo = foo
+      end
+
+      fsm:warn("bar")
+
+      assert.are.equals(fsm.foo, 'bar')
+    end)
+
     it("should fire the onstatechange handler", function()
       local fsm = machine.create({ initial = 'green', events = stoplight })
       fsm.onstatechange = function(self, name, from, to) 
