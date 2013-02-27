@@ -44,6 +44,16 @@ local function create_transition(name)
   end
 end
 
+local function add_to_map(map, event)
+  if type(event.from) == 'string' then
+    map[event.from] = event.to
+  else
+    for _, from in ipairs(event.from) do
+      map[from] = event.to
+    end
+  end
+end
+
 function machine.create(options)
   assert(options.events)
 
@@ -57,7 +67,7 @@ function machine.create(options)
     local name = event.name
     fsm[name] = create_transition(name)
     fsm.events[name] = fsm.events[name] or { map = {} }
-    fsm.events[name].map[event.from] = event.to
+    add_to_map(fsm.events[name].map, event)
   end
 
   return fsm
