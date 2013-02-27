@@ -2,40 +2,30 @@ local machine = {}
 machine.__index = machine
 
 
+local function call_handler(handler, params)
+  if handler then
+    return handler(unpack(params))
+  end
+end
+
 local function create_transition(name)
   return function(self, ...)
     local can, to = self:can(name)
 
     if can then
       local from = self.current
+      local params = { self, name, from, to, ... }
 
-      if self["onbefore" .. name] then 
-        local cancel = self["onbefore" .. name](self, name, from, to, ...)
-        if cancel == false then
-          return false
-        end
-      end
-
-      if self["onleave" .. from] then 
-        local cancel = self["onleave" .. from](self, name, from, to, ...)
-        if cancel == false then
-          return false
-        end
+      if call_handler(self["onbefore" .. name], params) == false
+      or call_handler(self["onleave" .. from], params) == false then
+        return false
       end
 
       self.current = to
 
-      if self["on" .. to] then 
-        self["on" .. to](self, name, from, to, ...)
-      end
-
-      if self["on" .. name] then 
-        self["on" .. name](self, name, from, to, ...)
-      end
-
-      if self.onstatechange then 
-        self.onstatechange(self, name, from, to, ...)
-      end
+      call_handler(self["onenter" .. to] or self["on" .. to], params)
+      call_handler(self["onafter" .. name] or self["on" .. name], params)
+      call_handler(self["onstatechange"], params)
 
       return true
     end
