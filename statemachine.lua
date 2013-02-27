@@ -2,10 +2,11 @@ local machine = {}
 machine.__index = machine
 
 
-local function create_transition(name, to)
+local function create_transition(name)
   return function(self, ...)
-    if self:can(name) then
+    local can, to = self:can(name)
 
+    if can then
       local from = self.current
 
       if self["onbefore" .. name] then 
@@ -38,6 +39,7 @@ local function create_transition(name, to)
 
       return true
     end
+
     return false
   end
 end
@@ -53,7 +55,7 @@ function machine.create(options)
 
   for _, event in ipairs(options.events) do
     local name = event.name
-    fsm[name] = create_transition(name, event.to)
+    fsm[name] = create_transition(name)
     fsm.events[name] = fsm.events[name] or { map = {} }
     fsm.events[name].map[event.from] = event.to
   end

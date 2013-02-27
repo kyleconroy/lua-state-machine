@@ -111,4 +111,32 @@ describe("Lua state machine framework", function()
       assert.are.equals(fsm.to, 'yellow')
     end)
   end)
+
+  describe("A monster", function()
+    local fsm
+    local monster = {
+      { name = 'eat',  from = 'hungry',                                to = 'satisfied' },
+      { name = 'eat',  from = 'satisfied',                             to = 'full'      },
+      { name = 'eat',  from = 'full',                                  to = 'sick'      },
+      { name = 'rest', from = {'hungry', 'satisfied', 'full', 'sick'}, to = 'hungry'    }
+    }
+
+    before_each(function()
+      fsm = machine.create({ initial = 'hungry', events = monster })
+    end)
+
+    it("can eat unless it is sick", function()
+      assert.is.equal(fsm.current, 'hungry')
+      assert.is_true(fsm:can('eat'))
+      fsm:eat()
+      assert.is.equal(fsm.current, 'satisfied')
+      assert.is_true(fsm:can('eat'))
+      fsm:eat()
+      assert.is.equal(fsm.current, 'full')
+      assert.is_true(fsm:can('eat'))
+      fsm:eat()
+      assert.is.equal(fsm.current, 'sick')
+      assert.is_false(fsm:can('eat'))
+    end)
+  end)
 end)
