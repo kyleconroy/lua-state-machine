@@ -51,7 +51,7 @@ describe("Lua state machine framework", function()
       assert.is_false(fsm:is('yellow'))
     end)
 
-    it("should cancel the warn event", function()
+    it("should cancel the warn event from onleavegreen", function()
       fsm.onleavegreen = function(self, name, from, to) 
         return false
       end
@@ -62,7 +62,7 @@ describe("Lua state machine framework", function()
       assert.are_equal(fsm.current, 'green')
     end)
 
-    it("should cancel the warn event", function()
+    it("should cancel the warn event from onbeforewarn", function()
       fsm.onbeforewarn = function(self, name, from, to) 
         return false
       end
@@ -71,16 +71,6 @@ describe("Lua state machine framework", function()
 
       assert.is_false(result)
       assert.are_equal(fsm.current, 'green')
-    end)
-
-    it("should accept other arguments", function()
-      fsm.onstatechange = function(self, name, from, to, foo)
-        self.foo = foo
-      end
-
-      fsm:warn("bar")
-
-      assert.are_equal(fsm.foo, 'bar')
     end)
 
     it("should fire the onstatechange handler", function()
@@ -95,6 +85,16 @@ describe("Lua state machine framework", function()
       assert.are_equal(fsm.name, 'warn')
       assert.are_equal(fsm.from, 'green')
       assert.are_equal(fsm.to, 'yellow')
+    end)
+
+    it("should accept additional arguments to handlers", function()
+      fsm.onstatechange = function(self, name, from, to, foo)
+        self.foo = foo
+      end
+
+      fsm:warn('bar')
+
+      assert.are_equal(fsm.foo, 'bar')
     end)
 
     it("should fire the onwarn handler", function()
