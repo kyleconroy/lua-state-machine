@@ -42,7 +42,6 @@ local function create_transition(name, to)
   end
 end
 
-
 function machine.create(options)
   assert(options.events)
 
@@ -53,7 +52,10 @@ function machine.create(options)
   fsm.events = options.events
 
   for _, event in ipairs(options.events) do
-    fsm[event.name] = create_transition(event.name, event.to)
+    local name = event.name
+    fsm[name] = create_transition(name, event.to)
+    fsm.events[name] = fsm.events[name] or { map = {} }
+    fsm.events[name].map[event.from] = event.to
   end
 
   return fsm
@@ -64,12 +66,9 @@ function machine:is(state)
 end
 
 function machine:can(e)
-  for _, event in ipairs(self.events) do
-    if event.name == e and self.current == event.from then
-      return true
-    end
-  end
-  return false
+  local event = self.events[e]
+  local to = event and event.map[self.current]
+  return to ~= nil, to
 end
 
 function machine:cannot(e)
