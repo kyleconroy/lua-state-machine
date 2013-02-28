@@ -2,10 +2,11 @@ local machine = {}
 machine.__index = machine
 
 
-local function create_transition(name, to)
+local function create_transition(name)
   return function(self, ...)
-    if self:can(name) then
+    local can, to = self:can(name)
 
+    if can then
       local from = self.current
 
       if self["onbefore" .. name] then 
@@ -38,10 +39,20 @@ local function create_transition(name, to)
 
       return true
     end
+
     return false
   end
 end
 
+local function add_to_map(map, event)
+  if type(event.from) == 'string' then
+    map[event.from] = event.to
+  else
+    for _, from in ipairs(event.from) do
+      map[from] = event.to
+    end
+  end
+end
 
 function machine.create(options)
   assert(options.events)
@@ -50,10 +61,13 @@ function machine.create(options)
   setmetatable(fsm, machine)
 
   fsm.current = options.initial or 'none'
-  fsm.events = options.events
+  fsm.events = {}
 
   for _, event in ipairs(options.events) do
-    fsm[event.name] = create_transition(event.name, event.to)
+    local name = event.name
+    fsm[name] = fsm[name] or create_transition(name)
+    fsm.events[name] = fsm.events[name] or { map = {} }
+    add_to_map(fsm.events[name].map, event)
   end
 
   return fsm
@@ -64,12 +78,9 @@ function machine:is(state)
 end
 
 function machine:can(e)
-  for _, event in ipairs(self.events) do
-    if event.name == e and self.current == event.from then
-      return true
-    end
-  end
-  return false
+  local event = self.events[e]
+  local to = event and event.map[self.current]
+  return to ~= nil, to
 end
 
 function machine:cannot(e)
