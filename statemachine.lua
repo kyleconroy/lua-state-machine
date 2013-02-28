@@ -61,7 +61,7 @@ function machine.create(options)
   setmetatable(fsm, machine)
 
   fsm.current = options.initial or 'none'
-  fsm.events = options.events
+  fsm.events = {}
 
   for _, event in ipairs(options.events) do
     local name = event.name
