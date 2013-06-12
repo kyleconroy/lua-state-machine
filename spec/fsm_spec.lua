@@ -110,6 +110,13 @@ describe("Lua state machine framework", function()
       assert.are_equal(fsm.from, 'green')
       assert.are_equal(fsm.to, 'yellow')
     end)
+
+    it("todot generates dot file (graphviz)", function()
+      assert.has_no_error(function()
+        fsm:todot('stoplight.dot')
+      end)
+      assert.is_equal(io.open('stoplight.dot'):read('*a'), io.open('stoplight.dot.ref'):read('*a'))
+    end)
   end)
 
   describe("A monster", function()
