@@ -97,8 +97,37 @@ describe("Lua state machine framework", function()
       assert.are_equal(fsm.to, 'yellow')
     end)
 
+    it("should fire the onenteryellow handler", function()
+      fsm.onenteryellow = function(self, name, from, to) 
+        self.name = name
+        self.from = from
+        self.to = to
+      end
+
+      fsm:warn()
+
+      assert.are_equal(fsm.name, 'warn')
+      assert.are_equal(fsm.from, 'green')
+      assert.are_equal(fsm.to, 'yellow')
+    end)
+
+
     it("should fire the onwarn handler", function()
       fsm.onwarn = function(self, name, from, to) 
+        self.name = name
+        self.from = from
+        self.to = to
+      end
+
+      fsm:warn()
+
+      assert.are_equal(fsm.name, 'warn')
+      assert.are_equal(fsm.from, 'green')
+      assert.are_equal(fsm.to, 'yellow')
+    end)
+
+    it("should fire the onafterwarn handler", function()
+      fsm.onafterwarn = function(self, name, from, to) 
         self.name = name
         self.from = from
         self.to = to
