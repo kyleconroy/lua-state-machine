@@ -8,16 +8,18 @@ local function create_transition(name)
 
     if can then
       local from = self.current
-
-      if self["onbefore" .. name] then 
-        local cancel = self["onbefore" .. name](self, name, from, to, ...)
+      
+      local onbefore = self["onbefore" .. name]
+      if onbefore then 
+        local cancel = onbefore(self, name, from, to, ...)
         if cancel == false then
           return false
         end
       end
 
-      if self["onleave" .. from] then 
-        local cancel = self["onleave" .. from](self, name, from, to, ...)
+      local onleave = self["onleave" .. from]
+      if onleave then 
+        local cancel = onleave(self, name, from, to, ...)
         if cancel == false then
           return false
         end
@@ -25,12 +27,14 @@ local function create_transition(name)
 
       self.current = to
 
-      if self["on" .. to] then 
-        self["on" .. to](self, name, from, to, ...)
+      local onenter = self["onenter" .. to] or self["on" .. to]
+      if onenter then 
+        onenter(self, name, from, to, ...)
       end
 
-      if self["on" .. name] then 
-        self["on" .. name](self, name, from, to, ...)
+      local onafter = self["onafter" .. name] or self["on" .. name]
+      if onafter then 
+        onafter(self, name, from, to, ...)
       end
 
       if self.onstatechange then 
@@ -68,6 +72,12 @@ function machine.create(options)
     fsm[name] = fsm[name] or create_transition(name)
     fsm.events[name] = fsm.events[name] or { map = {} }
     add_to_map(fsm.events[name].map, event)
+  end
+
+  if options.callbacks then
+    for name, callback in pairs(options.callbacks) do
+      fsm[name] = callback
+    end
   end
 
   return fsm
