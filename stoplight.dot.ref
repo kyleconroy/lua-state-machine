@@ -1,0 +1,6 @@
+digraph {
+green -> yellow [label=warn];
+yellow -> red [label=panic];
+red -> yellow [label=calm];
+yellow -> green [label=clear];
+}
