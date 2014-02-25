@@ -2,9 +2,9 @@ local machine = {}
 machine.__index = machine
 
 
-local function call_handler(handler, params)
-  if handler then
-    return handler(unpack(params))
+local function call_handler(callbacks, handler, params)
+  if callbacks[handler] then
+    return callbacks[handler](callbacks, unpack(params))
   end
 end
 
@@ -15,22 +15,32 @@ local function create_transition(name)
     if can then
       local from = self.current
       local params = { self, name, from, to, ... }
+      local callbacks = nil
       if self.options.metatable == nil then
-        local callbacks = self
+        callbacks = self.options
       else
-        local callbacks = self.options.metatable
+        callbacks = self.options.metatable
       end
 
-      if call_handler(callbacks["onbefore" .. name], params) == false
-      or call_handler(callbacks["onleave" .. from], params) == false then
+      if call_handler(callbacks, "onbefore" .. name, params) == false
+      or call_handler(callbacks, "onleave" .. from, params) == false then
         return false
       end
 
       self.current = to
 
-      call_handler(callbacks["onenter" .. to] or callbacks["on" .. to], params)
-      call_handler(callbacks["onafter" .. name] or callbacks["on" .. name], params)
-      call_handler(callbacks["onstatechange"], params)
+      if callbacks["on" .. to] then
+        call_handler(callbacks, "on" .. to, params)
+      else
+        call_handler(callbacks, "onenter" .. to, params)
+      end
+      if callbacks["on" .. name] then
+        call_handler(callbacks, "on" .. name, params)
+      else
+        call_handler(callbacks, "onafter" .. name, params)
+      end
+
+      call_handler(callbacks, "onstatechange", params)
 
       return true
     end
@@ -66,11 +76,10 @@ function machine.create(options)
     add_to_map(fsm.events[name].map, event)
   end
 
-  if options.metatable == nil then
+  if options.callbacks ~= nil then
     for name, callback in pairs(options.callbacks) do
       fsm[name] = callback
     end
-  else
   end
 
   return fsm
