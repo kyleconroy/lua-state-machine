@@ -15,17 +15,22 @@ local function create_transition(name)
     if can then
       local from = self.current
       local params = { self, name, from, to, ... }
+      if self.options.metatable == nil then
+        local callbacks = self
+      else
+        local callbacks = self.options.metatable
+      end
 
-      if call_handler(self["onbefore" .. name], params) == false
-      or call_handler(self["onleave" .. from], params) == false then
+      if call_handler(callbacks["onbefore" .. name], params) == false
+      or call_handler(callbacks["onleave" .. from], params) == false then
         return false
       end
 
       self.current = to
 
-      call_handler(self["onenter" .. to] or self["on" .. to], params)
-      call_handler(self["onafter" .. name] or self["on" .. name], params)
-      call_handler(self["onstatechange"], params)
+      call_handler(callbacks["onenter" .. to] or callbacks["on" .. to], params)
+      call_handler(callbacks["onafter" .. name] or callbacks["on" .. name], params)
+      call_handler(callbacks["onstatechange"], params)
 
       return true
     end
@@ -59,6 +64,13 @@ function machine.create(options)
     fsm[name] = fsm[name] or create_transition(name)
     fsm.events[name] = fsm.events[name] or { map = {} }
     add_to_map(fsm.events[name].map, event)
+  end
+
+  if options.metatable == nil then
+    for name, callback in pairs(options.callbacks) do
+      fsm[name] = callback
+    end
+  else
   end
 
   return fsm
