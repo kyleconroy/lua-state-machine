@@ -204,42 +204,6 @@ local fsm = machine.create({
 
 >> _NOTE: If you decide to cancel the ASYNC event, you can call `fsm.transition.cancel()`
 
-State Machine Classes
-=====================
-
-You can also turn all instances of a  _class_ into an FSM by applying
-the state machine functionality to the prototype, including your callbacks
-in your prototype, and providing a `startup` event for use when constructing
-instances:
-
-```lua
-local machine = require('statemachine')
-local MyFSM = {}
-
-function MyFSM:onpanic(event, from, to)
-  print('panic')
-end
-
-function MyFSM:onclear(event, from, to)
-  print('all is clear')
-end
-
-local fsm = machine.create({
-  metatable = MyFSM,
-  events = [
-    { name = 'startup', from = 'none',   to = 'green'  },
-    { name = 'warn',    from = 'green',  to = 'yellow' },
-    { name = 'panic',   from = 'yellow', to = 'red'    },
-    { name = 'calm',    from = 'red',    to = 'yellow' },
-    { name = 'clear',   from = 'yellow', to = 'green'  }
-  }})
-```
-
-This should be easy to adjust to fit your appropriate mechanism for object construction.
-
->> _NOTE: the `startup` event can be given any name, but it must be present in some form to 
-   ensure that each instance constructed is initialized with its own unique `current` state._
-
 Initialization Options
 ======================
 
