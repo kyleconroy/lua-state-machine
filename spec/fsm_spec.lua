@@ -51,6 +51,32 @@ describe("Lua state machine framework", function()
       assert.is_false(fsm:is('yellow'))
     end)
 
+    it("should fire callbacks", function()
+      local fsm = machine.create({
+        initial = 'green',
+        events = stoplight,
+        callbacks = {
+          onbeforewarn = stub.new(),
+          onleavegreen = stub.new(),
+          onenteryellow = stub.new(),
+          onafterwarn = stub.new(),
+          onstatechange = stub.new(),
+          onyellow = stub.new(),
+          onwarn = stub.new()
+        }
+      })
+
+      fsm:warn()
+
+      assert.spy(fsm.onbeforewarn).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onleavegreen).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onenteryellow).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onafterwarn).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onstatechange).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onyellow).was_not_called()
+      assert.spy(fsm.onwarn).was_not_called()
+    end)
+
     it("should fire handlers", function()
       fsm.onbeforewarn = stub.new()
       fsm.onleavegreen = stub.new()
@@ -72,7 +98,6 @@ describe("Lua state machine framework", function()
       assert.spy(fsm.onyellow).was_not_called()
       assert.spy(fsm.onwarn).was_not_called()
     end)
-
 
     it("should accept additional arguments to handlers", function()
       fsm.onbeforewarn = stub.new()
