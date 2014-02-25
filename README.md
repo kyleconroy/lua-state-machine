@@ -204,42 +204,6 @@ local fsm = machine.create({
 
 >> _NOTE: If you decide to cancel the ASYNC event, you can call `fsm.transition.cancel()`
 
-State Machine Classes
-=====================
-
-You can also turn all instances of a  _class_ into an FSM by applying
-the state machine functionality to the prototype, including your callbacks
-in your prototype, and providing a `startup` event for use when constructing
-instances:
-
-```lua
-local machine = require('statemachine')
-local MyFSM = {}
-
-function MyFSM:onpanic(event, from, to)
-  print('panic')
-end
-
-function MyFSM:onclear(event, from, to)
-  print('all is clear')
-end
-
-local fsm = machine.create({
-  metatable = MyFSM,
-  events = [
-    { name = 'startup', from = 'none',   to = 'green'  },
-    { name = 'warn',    from = 'green',  to = 'yellow' },
-    { name = 'panic',   from = 'yellow', to = 'red'    },
-    { name = 'calm',    from = 'red',    to = 'yellow' },
-    { name = 'clear',   from = 'yellow', to = 'green'  }
-  }})
-```
-
-This should be easy to adjust to fit your appropriate mechanism for object construction.
-
->> _NOTE: the `startup` event can be given any name, but it must be present in some form to 
-   ensure that each instance constructed is initialized with its own unique `current` state._
-
 Initialization Options
 ======================
 
@@ -277,70 +241,4 @@ local fsm = machine.create({
     { name = 'calm',    from = 'red',   to = 'green' },
 }})
 print(fsm.current) -- "green"
-```
-
-If your object already has a `startup` method you can use a different name for the initial event
-
-```lua
-local machine = require('statemachine')
-
-local fsm = machine.create({
-  inital = { state = 'green', event = 'init' },
-  events = {
-    { name = 'panic',   from = 'green', to = 'red'   },
-    { name = 'calm',    from = 'red',   to = 'green' },
-}})
-print(fsm.current) -- "green"
-```
-
-Finally, if you want to wait to call the initial state transition event until a later date you
-can `defer` it:
-
-```lua
-local machine = require('statemachine')
-
-local fsm = machine.create({
-  inital = { state = 'green', event = 'init', defer = true},
-  events = {
-    { name = 'panic',   from = 'green', to = 'red'   },
-    { name = 'calm',    from = 'red',   to = 'green' },
-}})
-
-print(fsm.current) -- "none"
-fsm.init()
-print(fsm.current) -- "green"
-```
-
-Of course, we have now come full circle, this last example is pretty much functionally the
-same as the first example in this section where you simply define your own startup event.
-
-So you have a number of choices available to you when initializing your state machine.
-
->> _IMPORTANT NOTE: if you are using the pattern described in the previous section "State Machine
-   Classes", and wish to declare an `initial` state in this manner, you MUST use the `defer: true`
-   attribute and manually call the starting event in your constructor function. This will ensure
-   that each instance gets its own unique `current` state, rather than an (unwanted) shared
-   `current` state on the prototype object itself._
-
-Handling Failures
-======================
-
-By default, if you try to call an event method that is not allowed in the current state, the
-state machine will throw an exception. If you prefer to handle the problem yourself, you can
-define a custom `error` handler:
-
-```lua
-local machine = require('statemachine')
-
-local fsm = machine.create({
-  inital = { state = 'green', event = 'init', defer = true},
-  error = function(eventName, from, to, args, errorCode, errorMessage)
-    return 'event ' .. eventName .. ' was naughty :- ' .. errorMessage
-  end,
-  events = {
-    { name = 'panic',   from = 'green', to = 'red'   },
-    { name = 'calm',    from = 'red',   to = 'green' },
-}})
-
-print(fsm:calm()); -- "event calm was naughty :- event not allowed in current state green"
 ```
