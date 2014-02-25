@@ -50,9 +50,9 @@ function machine.create(options)
   local fsm = {}
   setmetatable(fsm, machine)
 
+  fsm.options = options
   fsm.current = options.initial or 'none'
   fsm.events = {}
-  fsm.options = options
 
   for _, event in ipairs(options.events or {}) do
     local name = event.name
