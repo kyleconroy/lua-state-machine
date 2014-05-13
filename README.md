@@ -106,7 +106,7 @@ For convenience, the 2 most useful callbacks can be shortened:
  * on**event** - convenience shorthand for onafter**event**
  * on**state** - convenience shorthand for onenter**state**
 
-In addition, a generic `onchangestate()` callback can be used to call a single function for _all_ state changes:
+In addition, a generic `onstatechange()` callback can be used to call a single function for _all_ state changes:
 
 All callbacks will be passed the same arguments:
 
@@ -148,7 +148,7 @@ Additionally, they can be added and removed from the state machine at any time:
 fsm.ongreen       = nil
 fsm.onyellow      = nil
 fsm.onred         = nil
-fsm.onchangestate = function(event, from, to) print(to) end
+fsm.onstatechange = function(event, from, to) print(to) end
 ```
 
 Asynchronous State Transitions
