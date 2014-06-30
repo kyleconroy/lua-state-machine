@@ -110,6 +110,7 @@ In addition, a generic `onstatechange()` callback can be used to call a single f
 
 All callbacks will be passed the same arguments:
 
+ * **self**
  * **event** name
  * **from** state
  * **to** state
@@ -129,15 +130,17 @@ local fsm = machine.create({
     { name = 'clear', from = 'yellow', to = 'green'  }
   },
   callbacks = {
-    onpanic =  function(event, from, to, msg) print('panic! ' .. msg)    end,
-    onclear =  function(event, from, to, msg) print('thanks to ' .. msg) end,
-    ongreen =  function(event, from, to)      print('green light')       end,
-    onyellow = function(event, from, to)      print('yellow light')      end,
-    onred =    function(event, from, to)      print('red light')         end,
+    onpanic =  function(self, event, from, to, msg) print('panic! ' .. msg)    end,
+    onclear =  function(self, event, from, to, msg) print('thanks to ' .. msg) end,
+    ongreen =  function(self, event, from, to)      print('green light')       end,
+    onyellow = function(self, event, from, to)      print('yellow light')      end,
+    onred =    function(self, event, from, to)      print('red light')         end,
   }
 })
 
+fsm:warn()
 fsm:panic('killer bees')
+fsm:calm()
 fsm:clear('sedatives in the honey pots')
 ...
 ```
@@ -148,7 +151,12 @@ Additionally, they can be added and removed from the state machine at any time:
 fsm.ongreen       = nil
 fsm.onyellow      = nil
 fsm.onred         = nil
-fsm.onstatechange = function(event, from, to) print(to) end
+fsm.onstatechange = function(self, event, from, to) print(to) end
+```
+
+or
+```
+function fsm:onstatechange(event, from, to) print(to) end
 ```
 
 Asynchronous State Transitions
