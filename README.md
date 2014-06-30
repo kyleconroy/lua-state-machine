@@ -155,7 +155,7 @@ fsm.onstatechange = function(self, event, from, to) print(to) end
 ```
 
 or
-```
+```lua
 function fsm:onstatechange(event, from, to) print(to) end
 ```
 
