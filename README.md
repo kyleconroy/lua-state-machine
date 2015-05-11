@@ -67,7 +67,7 @@ local fsm = machine.create({
     { name = 'eat',  from = 'hungry',                                to = 'satisfied' },
     { name = 'eat',  from = 'satisfied',                             to = 'full'      },
     { name = 'eat',  from = 'full',                                  to = 'sick'      },
-    { name = 'rest', from = ['hungry', 'satisfied', 'full', 'sick'], to = 'hungry'    },
+    { name = 'rest', from = {'hungry', 'satisfied', 'full', 'sick'}, to = 'hungry'    },
 }})
 ```
 
