@@ -74,7 +74,7 @@ end
 
 function machine:can(e)
   local event = self.events[e]
-  local to = event and event.map[self.current]
+  local to = event and event.map[self.current] or event.map['*']
   return to ~= nil, to
 end
 
