@@ -11,10 +11,6 @@ end
 local function create_transition(name)
   local can, to, from, params
 
-  -- local can, to = self:can(name)
-  -- local from = self.current
-  -- local params = { self, name, from, to }
-
   local function transition(self, ...)
 
     if self.asyncState == "none" then
@@ -67,25 +63,6 @@ local function create_transition(name)
 
     self.currentTransitioningEvent = nil
     return false
-    -- if can then
-    --   local from = self.current
-    --   local params = { self, name, from, to, ... }
-
-    --   if call_handler(self["onbefore" .. name], params) == false
-    --   or call_handler(self["onleave" .. from], params) == false then
-    --     return false
-    --   end
-
-    --   self.current = to
-
-    --   call_handler(self["onenter" .. to] or self["on" .. to], params)
-    --   call_handler(self["onafter" .. name] or self["on" .. name], params)
-    --   call_handler(self["onstatechange"], params)
-
-    --   return true
-    -- end
-
-    -- return false
   end
 
   return transition
