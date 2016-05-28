@@ -9,29 +9,80 @@ local function call_handler(handler, params)
 end
 
 local function create_transition(name)
-  return function(self, ...)
-    local can, to = self:can(name)
+  local can, to, from, params
 
-    if can then
-      local from = self.current
-      local params = { self, name, from, to, ... }
+  -- local can, to = self:can(name)
+  -- local from = self.current
+  -- local params = { self, name, from, to }
 
-      if call_handler(self["onbefore" .. name], params) == false
-      or call_handler(self["onleave" .. from], params) == false then
+  local function transition(self, ...)
+
+    if self.asyncState == "none" then
+      can, to = self:can(name)
+      from = self.current
+      params = { self, name, from, to, ...}
+
+      if not can then return false end
+      self.currentEvent = name
+
+      local beforeReturn = call_handler(self["onbefore" .. name], params)
+      local leaveReturn = call_handler(self["onleave" .. from], params)
+
+      if beforeReturn == false or leaveReturn == false then
         return false
       end
 
+      self.asyncState = name .. "WaitingOnLeave"
+
+      if leaveReturn ~= "async" then
+        transition(self, ...)
+      end
+      
+      return true
+    elseif self.asyncState == name .. "WaitingOnLeave" then
       self.current = to
 
-      call_handler(self["onenter" .. to] or self["on" .. to], params)
+      local enterReturn = call_handler(self["onenter" .. to] or self["on" .. to], params)
+
+      self.asyncState = name .. "WaitingOnEnter"
+
+      if enterReturn ~= "async" then
+        transition(self, ...)
+      end
+      
+      return true
+    elseif self.asyncState == name .. "WaitingOnEnter" then
       call_handler(self["onafter" .. name] or self["on" .. name], params)
       call_handler(self["onstatechange"], params)
-
+      self.asyncState = "none"
+      self.currentEvent = nil
       return true
     end
 
+    self.currentName = nil
     return false
+    -- if can then
+    --   local from = self.current
+    --   local params = { self, name, from, to, ... }
+
+    --   if call_handler(self["onbefore" .. name], params) == false
+    --   or call_handler(self["onleave" .. from], params) == false then
+    --     return false
+    --   end
+
+    --   self.current = to
+
+    --   call_handler(self["onenter" .. to] or self["on" .. to], params)
+    --   call_handler(self["onafter" .. name] or self["on" .. name], params)
+    --   call_handler(self["onstatechange"], params)
+
+    --   return true
+    -- end
+
+    -- return false
   end
+
+  return transition
 end
 
 local function add_to_map(map, event)
@@ -52,6 +103,7 @@ function machine.create(options)
 
   fsm.options = options
   fsm.current = options.initial or 'none'
+  fsm.asyncState = "none"
   fsm.events = {}
 
   for _, event in ipairs(options.events or {}) do
@@ -99,6 +151,12 @@ function machine:todot(filename)
   end
   dotfile:write('}\n')
   dotfile:close()
+end
+
+function machine:transition()
+  if self.currentEvent ~= nil then
+    return self[self.currentEvent](self)
+  end
 end
 
 

@@ -1,6 +1,7 @@
 require("busted")
 
 local machine = require("statemachine")
+local _ = require("luassert.match")._
 
 describe("Lua state machine framework", function()
   describe("A stop light", function()
@@ -69,13 +70,13 @@ describe("Lua state machine framework", function()
       fsm:warn()
 
       fsm.current = 'green'
-      assert.spy(fsm.onbeforewarn).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onleavegreen).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow')
 
       fsm.current = 'yellow'
-      assert.spy(fsm.onenteryellow).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onafterwarn).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onstatechange).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow')
 
       assert.spy(fsm.onyellow).was_not_called()
       assert.spy(fsm.onwarn).was_not_called()
@@ -94,13 +95,13 @@ describe("Lua state machine framework", function()
       fsm:warn()
 
       fsm.current = 'green'
-      assert.spy(fsm.onbeforewarn).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onleavegreen).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow')
 
       fsm.current = 'yellow'
-      assert.spy(fsm.onenteryellow).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onafterwarn).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onstatechange).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow')
 
       assert.spy(fsm.onyellow).was_not_called()
       assert.spy(fsm.onwarn).was_not_called()
@@ -116,13 +117,13 @@ describe("Lua state machine framework", function()
       fsm:warn('bar')
 
       fsm.current = 'green'
-      assert.spy(fsm.onbeforewarn).was_called_with(fsm, 'warn', 'green', 'yellow', 'bar')
-      assert.spy(fsm.onleavegreen).was_called_with(fsm, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       
       fsm.current = 'yellow'
-      assert.spy(fsm.onenteryellow).was_called_with(fsm, 'warn', 'green', 'yellow', 'bar')
-      assert.spy(fsm.onafterwarn).was_called_with(fsm, 'warn', 'green', 'yellow', 'bar')
-      assert.spy(fsm.onstatechange).was_called_with(fsm, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
     end)
 
     it("should fire short handlers as a fallback", function()
@@ -131,8 +132,8 @@ describe("Lua state machine framework", function()
 
       fsm:warn()
 
-      assert.spy(fsm.onyellow).was_called_with(fsm, 'warn', 'green', 'yellow')
-      assert.spy(fsm.onwarn).was_called_with(fsm, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onyellow).was_called_with(_, 'warn', 'green', 'yellow')
+      assert.spy(fsm.onwarn).was_called_with(_, 'warn', 'green', 'yellow')
     end)
 
     it("should cancel the warn event from onleavegreen", function()
@@ -155,6 +156,56 @@ describe("Lua state machine framework", function()
 
       assert.is_false(result)
       assert.are_equal(fsm.current, 'green')
+    end)
+
+    it("pauses when async is passed", function()
+      fsm.onleavegreen = function(self, name, from, to)
+        return "async"
+      end
+      fsm.onenteryellow = function(self, name, from, to)
+        return "async"
+      end
+
+      local result = fsm:warn()
+      assert.is_true(result)
+      assert.are_equal(fsm.current, 'green')
+      assert.are_equal(fsm.currentEvent, 'warn')
+      assert.are_equal(fsm.asyncState, 'warnWaitingOnLeave')
+
+      result = fsm:transition()
+      assert.is_true(result)
+      assert.are_equal(fsm.current, 'yellow')
+      assert.are_equal(fsm.currentEvent, 'warn')
+      assert.are_equal(fsm.asyncState, 'warnWaitingOnEnter')
+
+      result = fsm:transition()
+      assert.is_true(result)
+      assert.are_equal(fsm.current, 'yellow')
+      assert.is_nil(fsm.currentEvent)
+      assert.are_equal(fsm.asyncState, 'none')
+    end)
+
+    it("should accept additional arguments to async handlers", function()
+      fsm.onbeforewarn = stub.new()
+      fsm.onleavegreen = spy.new(function(self, name, from, to, arg)
+        return "async"
+      end)
+      fsm.onenteryellow = spy.new(function(self, name, from, to, arg)
+        return "async"
+      end)
+      fsm.onafterwarn = stub.new()
+      fsm.onstatechange = stub.new()
+
+      fsm:warn('bar')
+      assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+
+      fsm:transition()
+      assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+
+      fsm:transition()
+      assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+      assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
     end)
 
     it("todot generates dot file (graphviz)", function()
