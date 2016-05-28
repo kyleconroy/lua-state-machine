@@ -69,11 +69,9 @@ describe("Lua state machine framework", function()
 
       fsm:warn()
 
-      fsm.current = 'green'
       assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow')
 
-      fsm.current = 'yellow'
       assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow')
@@ -94,11 +92,9 @@ describe("Lua state machine framework", function()
 
       fsm:warn()
 
-      fsm.current = 'green'
       assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow')
 
-      fsm.current = 'yellow'
       assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow')
       assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow')
@@ -116,11 +112,9 @@ describe("Lua state machine framework", function()
 
       fsm:warn('bar')
 
-      fsm.current = 'green'
       assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       
-      fsm.current = 'yellow'
       assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
