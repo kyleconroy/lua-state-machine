@@ -251,6 +251,31 @@ describe("Lua state machine framework", function()
       assert.are_equal(fsm.current, 'red')
     end)
 
+    it("should properly cancel the transition if asked", function()
+      fsm.onleavegreen = function(self, name, from, to)
+        return "async"
+      end
+
+      fsm:warn()
+      fsm:cancelTransition(fsm.currentTransitioningEvent)
+
+      assert.is_nil(fsm.currentTransitioningEvent)
+      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.current, 'green')
+
+      fsm.onleavegreen = nil
+      fsm.onenteryellow = function(self, name, from, to)
+        return "async"
+      end
+
+      fsm:warn()
+      fsm:cancelTransition(fsm.currentTransitioningEvent)
+
+      assert.is_nil(fsm.currentTransitioningEvent)
+      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.current, 'yellow')
+    end)
+
     it("todot generates dot file (graphviz)", function()
       assert.has_no_error(function()
         fsm:todot('stoplight.dot')

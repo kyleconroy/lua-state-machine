@@ -142,5 +142,12 @@ function machine:transition(event)
   end
 end
 
+function machine:cancelTransition(event)
+  if self.currentTransitioningEvent == event then
+    self.asyncState = 'none'
+    self.currentTransitioningEvent = nil
+  end
+end
+
 
 return machine
