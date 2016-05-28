@@ -23,7 +23,7 @@ local function create_transition(name)
       params = { self, name, from, to, ...}
 
       if not can then return false end
-      self.currentEvent = name
+      self.currentTransitioningEvent = name
 
       local beforeReturn = call_handler(self["onbefore" .. name], params)
       local leaveReturn = call_handler(self["onleave" .. from], params)
@@ -55,11 +55,17 @@ local function create_transition(name)
       call_handler(self["onafter" .. name] or self["on" .. name], params)
       call_handler(self["onstatechange"], params)
       self.asyncState = "none"
-      self.currentEvent = nil
+      self.currentTransitioningEvent = nil
       return true
+    else
+    	if string.find(self.asyncState, "WaitingOnLeave") or string.find(self.asyncState, "WaitingOnEnter") then
+    		self.asyncState = "none"
+    		transition(self, ...)
+    		return true
+    	end
     end
 
-    self.currentName = nil
+    self.currentTransitioningEvent = nil
     return false
     -- if can then
     --   local from = self.current
@@ -153,9 +159,9 @@ function machine:todot(filename)
   dotfile:close()
 end
 
-function machine:transition()
-  if self.currentEvent ~= nil then
-    return self[self.currentEvent](self)
+function machine:transition(event)
+  if self.currentTransitioningEvent == event then
+    return self[self.currentTransitioningEvent](self)
   end
 end
 

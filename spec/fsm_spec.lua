@@ -169,19 +169,19 @@ describe("Lua state machine framework", function()
       local result = fsm:warn()
       assert.is_true(result)
       assert.are_equal(fsm.current, 'green')
-      assert.are_equal(fsm.currentEvent, 'warn')
+      assert.are_equal(fsm.currentTransitioningEvent, 'warn')
       assert.are_equal(fsm.asyncState, 'warnWaitingOnLeave')
 
-      result = fsm:transition()
+      result = fsm:transition(fsm.currentTransitioningEvent)
       assert.is_true(result)
       assert.are_equal(fsm.current, 'yellow')
-      assert.are_equal(fsm.currentEvent, 'warn')
+      assert.are_equal(fsm.currentTransitioningEvent, 'warn')
       assert.are_equal(fsm.asyncState, 'warnWaitingOnEnter')
 
-      result = fsm:transition()
+      result = fsm:transition(fsm.currentTransitioningEvent)
       assert.is_true(result)
       assert.are_equal(fsm.current, 'yellow')
-      assert.is_nil(fsm.currentEvent)
+      assert.is_nil(fsm.currentTransitioningEvent)
       assert.are_equal(fsm.asyncState, 'none')
     end)
 
@@ -200,12 +200,55 @@ describe("Lua state machine framework", function()
       assert.spy(fsm.onbeforewarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       assert.spy(fsm.onleavegreen).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
 
-      fsm:transition()
+      fsm:transition(fsm.currentTransitioningEvent)
       assert.spy(fsm.onenteryellow).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
 
-      fsm:transition()
+      fsm:transition(fsm.currentTransitioningEvent)
       assert.spy(fsm.onafterwarn).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
       assert.spy(fsm.onstatechange).was_called_with(_, 'warn', 'green', 'yellow', 'bar')
+    end)
+
+    it("should properly transition when another event happens during leave async", function()
+      local tempStoplight = {}
+      for _, event in ipairs(stoplight) do
+        table.insert(tempStoplight, event)
+      end
+      table.insert(tempStoplight, { name = "panic", from = "green", to = "red" })
+      
+      local fsm = machine.create({
+        initial = 'green',
+        events = tempStoplight
+      })
+
+      fsm.onleavegreen = function(self, name, from, to)
+        return "async"
+      end
+
+      fsm:warn()
+
+      local result = fsm:panic()
+      local transitionResult = fsm:transition(fsm.currentTransitioningEvent)
+
+      assert.is_true(result)
+      assert.is_true(transitionResult)
+      assert.is_nil(fsm.currentTransitioningEvent)
+      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.current, 'red')
+    end)
+
+    it("should properly transition when another event happens during enter async", function()
+      fsm.onenteryellow = function(self, name, from, to)
+        return "async"
+      end
+
+      fsm:warn()
+
+      local result = fsm:panic()
+
+      assert.is_true(result)
+      assert.is_nil(fsm.currentTransitioningEvent)
+      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.current, 'red')
     end)
 
     it("todot generates dot file (graphviz)", function()
