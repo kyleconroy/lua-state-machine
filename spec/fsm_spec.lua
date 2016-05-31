@@ -154,10 +154,10 @@ describe("Lua state machine framework", function()
 
     it("pauses when async is passed", function()
       fsm.onleavegreen = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
       fsm.onenteryellow = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
 
       local result = fsm:warn()
@@ -176,16 +176,16 @@ describe("Lua state machine framework", function()
       assert.is_true(result)
       assert.are_equal(fsm.current, 'yellow')
       assert.is_nil(fsm.currentTransitioningEvent)
-      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.asyncState, fsm.NONE)
     end)
 
     it("should accept additional arguments to async handlers", function()
       fsm.onbeforewarn = stub.new()
       fsm.onleavegreen = spy.new(function(self, name, from, to, arg)
-        return "async"
+        return fsm.ASYNC
       end)
       fsm.onenteryellow = spy.new(function(self, name, from, to, arg)
-        return "async"
+        return fsm.ASYNC
       end)
       fsm.onafterwarn = stub.new()
       fsm.onstatechange = stub.new()
@@ -215,7 +215,7 @@ describe("Lua state machine framework", function()
       })
 
       fsm.onleavegreen = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
 
       fsm:warn()
@@ -226,13 +226,13 @@ describe("Lua state machine framework", function()
       assert.is_true(result)
       assert.is_true(transitionResult)
       assert.is_nil(fsm.currentTransitioningEvent)
-      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.asyncState, fsm.NONE)
       assert.are_equal(fsm.current, 'red')
     end)
 
     it("should properly transition when another event happens during enter async", function()
       fsm.onenteryellow = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
 
       fsm:warn()
@@ -241,32 +241,32 @@ describe("Lua state machine framework", function()
 
       assert.is_true(result)
       assert.is_nil(fsm.currentTransitioningEvent)
-      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.asyncState, fsm.NONE)
       assert.are_equal(fsm.current, 'red')
     end)
 
     it("should properly cancel the transition if asked", function()
       fsm.onleavegreen = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
 
       fsm:warn()
       fsm:cancelTransition(fsm.currentTransitioningEvent)
 
       assert.is_nil(fsm.currentTransitioningEvent)
-      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.asyncState, fsm.NONE)
       assert.are_equal(fsm.current, 'green')
 
       fsm.onleavegreen = nil
       fsm.onenteryellow = function(self, name, from, to)
-        return "async"
+        return fsm.ASYNC
       end
 
       fsm:warn()
       fsm:cancelTransition(fsm.currentTransitioningEvent)
 
       assert.is_nil(fsm.currentTransitioningEvent)
-      assert.are_equal(fsm.asyncState, 'none')
+      assert.are_equal(fsm.asyncState, fsm.NONE)
       assert.are_equal(fsm.current, 'yellow')
     end)
 

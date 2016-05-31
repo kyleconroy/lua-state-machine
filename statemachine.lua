@@ -1,6 +1,8 @@
 local machine = {}
 machine.__index = machine
 
+local NONE = "none"
+local ASYNC = "async"
 
 local function call_handler(handler, params)
   if handler then
@@ -12,8 +14,7 @@ local function create_transition(name)
   local can, to, from, params
 
   local function transition(self, ...)
-
-    if self.asyncState == "none" then
+    if self.asyncState == NONE then
       can, to = self:can(name)
       from = self.current
       params = { self, name, from, to, ...}
@@ -30,7 +31,7 @@ local function create_transition(name)
 
       self.asyncState = name .. "WaitingOnLeave"
 
-      if leaveReturn ~= "async" then
+      if leaveReturn ~= ASYNC then
         transition(self, ...)
       end
       
@@ -42,7 +43,7 @@ local function create_transition(name)
 
       self.asyncState = name .. "WaitingOnEnter"
 
-      if enterReturn ~= "async" then
+      if enterReturn ~= ASYNC then
         transition(self, ...)
       end
       
@@ -50,12 +51,12 @@ local function create_transition(name)
     elseif self.asyncState == name .. "WaitingOnEnter" then
       call_handler(self["onafter" .. name] or self["on" .. name], params)
       call_handler(self["onstatechange"], params)
-      self.asyncState = "none"
+      self.asyncState = NONE
       self.currentTransitioningEvent = nil
       return true
     else
     	if string.find(self.asyncState, "WaitingOnLeave") or string.find(self.asyncState, "WaitingOnEnter") then
-    		self.asyncState = "none"
+    		self.asyncState = NONE
     		transition(self, ...)
     		return true
     	end
@@ -86,7 +87,7 @@ function machine.create(options)
 
   fsm.options = options
   fsm.current = options.initial or 'none'
-  fsm.asyncState = "none"
+  fsm.asyncState = NONE
   fsm.events = {}
 
   for _, event in ipairs(options.events or {}) do
@@ -144,10 +145,12 @@ end
 
 function machine:cancelTransition(event)
   if self.currentTransitioningEvent == event then
-    self.asyncState = 'none'
+    self.asyncState = NONE
     self.currentTransitioningEvent = nil
   end
 end
 
+machine.NONE = NONE
+machine.ASYNC = ASYNC
 
 return machine
