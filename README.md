@@ -100,7 +100,7 @@ You can affect the event in 3 ways:
 
  * return `false` from an `onbeforeevent` handler to cancel the event.
  * return `false` from an `onleavestate` handler to cancel the event.
- * return `"async"` from an `onleavestate` or `onenterstate` handler to perform an asynchronous state transition (see next section)
+ * return `ASYNC` from an `onleavestate` or `onenterstate` handler to perform an asynchronous state transition (see next section)
 
 For convenience, the 2 most useful callbacks can be shortened:
 
@@ -170,7 +170,7 @@ A good example of this is when you transition out of a `menu` state, perhaps you
 fade the menu away, or slide it off the screen and don't want to transition to your `game` state
 until after that animation has been performed.
 
-You can now return `"async"` from your `onleavestate` and/or `onenterstate` handlers and the state machine
+You can now return `ASYNC` from your `onleavestate` and/or `onenterstate` handlers and the state machine
 will be _'put on hold'_ until you are ready to trigger the transition using the new `transition(eventName)`
 method.
 
@@ -202,14 +202,14 @@ local fsm = machine.create({
       manager.fade('fast', function()
         fsm:transition(name)
       end)
-      return "async" -- tell machine to defer next state until we call transition (in fadeOut callback above)
+      return fsm.ASYNC -- tell machine to defer next state until we call transition (in fadeOut callback above)
     end,
 
     onleavegame = function(fsm, name, from, to)
       manager.slide('slow', function()
         fsm:transition(name)
       end)
-      return "async" -- tell machine to defer next state until we call transition (in slideDown callback above)
+      return fsm.ASYNC -- tell machine to defer next state until we call transition (in slideDown callback above)
     end,
   }
 })
