@@ -178,7 +178,11 @@ If another event is triggered during a state machine transition, the event will 
 state the machine was transitioning to or from. Any calls to `transition` with the cancelled async event name
 will be invalidated.
 
-For example:
+During a state change, `asyncState` will transition from `NONE` to `[event]WaitingOnLeave` to `[event]WaitingOnEnter`,
+looping back to `NONE`. If the state machine is put on hold, `asyncState` will pause depending on which handler
+you returned `ASYNC` from.
+
+Example of asynchronous transitions:
 
 ```lua
 local machine = require('statemachine')
