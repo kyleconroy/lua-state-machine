@@ -45,6 +45,7 @@ local fsm = machine.create({
 along with the following members:
 
  * fsm.current   - contains the current state
+ * fsm.currentTransitioningEvent - contains the current event that is in a transition.
  * fsm:is(s)     - return true if state `s` is the current state
  * fsm:can(e)    - return true if event `e` can be fired in the current state
  * fsm:cannot(e) - return true if event `e` cannot be fired in the current state
@@ -99,7 +100,7 @@ You can affect the event in 3 ways:
 
  * return `false` from an `onbeforeevent` handler to cancel the event.
  * return `false` from an `onleavestate` handler to cancel the event.
- * return `ASYNC` from an `onleavestate` handler to perform an asynchronous state transition (see next section)
+ * return `ASYNC` from an `onleavestate` or `onenterstate` handler to perform an asynchronous state transition (see next section)
 
 For convenience, the 2 most useful callbacks can be shortened:
 
@@ -169,11 +170,19 @@ A good example of this is when you transition out of a `menu` state, perhaps you
 fade the menu away, or slide it off the screen and don't want to transition to your `game` state
 until after that animation has been performed.
 
-You can now return `StateMachine.ASYNC` from your `onleavestate` handler and the state machine
-will be _'put on hold'_ until you are ready to trigger the transition using the new `transition()`
+You can now return `ASYNC` from your `onleavestate` and/or `onenterstate` handlers and the state machine
+will be _'put on hold'_ until you are ready to trigger the transition using the new `transition(eventName)`
 method.
 
-For example, using jQuery effects:
+If another event is triggered during a state machine transition, the event will be triggered relative to the
+state the machine was transitioning to or from. Any calls to `transition` with the cancelled async event name
+will be invalidated.
+
+During a state change, `asyncState` will transition from `NONE` to `[event]WaitingOnLeave` to `[event]WaitingOnEnter`,
+looping back to `NONE`. If the state machine is put on hold, `asyncState` will pause depending on which handler
+you returned `ASYNC` from.
+
+Example of asynchronous transitions:
 
 ```lua
 local machine = require('statemachine')
@@ -193,24 +202,24 @@ local fsm = machine.create({
     onentermenu = function() manager.switch('menu') end,
     onentergame = function() manager.switch('game') end,
 
-    onleavemenu = function()
+    onleavemenu = function(fsm, name, from, to)
       manager.fade('fast', function()
-        fsm:transition()
+        fsm:transition(name)
       end)
-      return machine.ASYNC -- tell machine to defer next state until we call transition (in fadeOut callback above)
+      return fsm.ASYNC -- tell machine to defer next state until we call transition (in fadeOut callback above)
     end,
 
-    onleavegame = function()
+    onleavegame = function(fsm, name, from, to)
       manager.slide('slow', function()
-        fsm:transition()
+        fsm:transition(name)
       end)
-      return machine.ASYNC -- tell machine to defer next state until we call transition (in slideDown callback above)
+      return fsm.ASYNC -- tell machine to defer next state until we call transition (in slideDown callback above)
     end,
   }
 })
 ```
 
->> _NOTE: If you decide to cancel the ASYNC event, you can call `fsm.transition.cancel()`
+If you decide to cancel the async event, you can call `fsm.cancelTransition(eventName)`
 
 Initialization Options
 ======================
