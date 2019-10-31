@@ -1,0 +1,13 @@
+name: lua-state-machine test suite
+on: [push]
+jobs:
+
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: sudo apt-get -y install luajit luarocks
+    - run: sudo luarocks install luafilesystem
+    - run: sudo luarocks install busted
+    - run: sudo busted spec
