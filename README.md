@@ -1,8 +1,6 @@
 Lua Finite State Machine
 ========================
 
-[![Build Status](https://secure.travis-ci.org/kyleconroy/lua-state-machine.png?branch=master)](https://travis-ci.org/kyleconroy/lua-state-machine)
-
 This standalone lua module provides a finite state machine for your pleasure.
 Based **heavily** on Jake Gordon's
 [javascript-state-machine](https://github.com/jakesgordon/javascript-state-machine).
