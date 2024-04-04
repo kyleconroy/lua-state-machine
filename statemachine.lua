@@ -120,6 +120,7 @@ end
 
 function machine:todot(filename)
   local dotfile = io.open(filename,'w')
+  assert(dotfile~=nil)
   dotfile:write('digraph {\n')
   local transition = function(event,from,to)
     dotfile:write(string.format('%s -> %s [label=%s];\n',from,to,event))
