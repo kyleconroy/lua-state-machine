@@ -4,6 +4,9 @@ machine.__index = machine
 local NONE = "none"
 local ASYNC = "async"
 
+-- Compatibility for Lua 5.1 vs 5.2+
+local unpack = unpack or table.unpack
+
 local function call_handler(handler, params)
   if handler then
     return handler(unpack(params))
